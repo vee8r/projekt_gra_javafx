@@ -16,18 +16,16 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
+
         int speed = 10;
 
         GameScene gameScene = new GameScene();
 
-        Player player = new Player(0, 380, 3);
+        Player player = new Player(0, 380, 3,gameScene);
 
-        Canvas canvas = new Canvas(gameScene.getWidth(), gameScene.getHeight());
+        Canvas canvas = gameScene.getCanvas();
 
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-
-        gc.setFill(Color.RED);
-        gc.fillRect(player.getX(), player.getY(), 20, 20);
+        player.drawPlayer();
 
         Pane root = new Pane(canvas);
 
@@ -39,14 +37,14 @@ public class HelloApplication extends Application {
                     player.setX(player.getX() - speed);
                 }
             } else if (event.getCode() == KeyCode.RIGHT) {
-                if (player.getX() <= gameScene.getWidth() - gameScene.getMargin()) {
+                if (player.getX() <= gameScene.getWidth() - gameScene.getMargin()-20) {
                     player.setX(player.getX() + speed);
                 }
             }
 
-            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            gc.setFill(Color.RED);
-            gc.fillRect(player.getX(), player.getY(), 20, 20);
+            gameScene.getGraphicContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+            player.drawPlayer();
         });
 
         stage.setScene(scene);
