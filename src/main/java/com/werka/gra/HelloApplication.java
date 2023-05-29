@@ -1,56 +1,122 @@
 package com.werka.gra;
 
-import com.werka.gra.player.Player;
+import com.werka.gra.objects.Invader;
+import com.werka.gra.objects.Player;
 import com.werka.gra.scene.GameScene;
+import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+import static com.werka.gra.objects.Invader.INVADER_SIZE;
 
 public class HelloApplication extends Application {
+
+
+    public static HashSet<String> activeKeys = new HashSet<>();
+
+    private List<Invader> invaders;
+    private Player player;
+
+    private boolean gameOver;
+
+    public static final int INVADER_SPEED = 30;
+
     @Override
     public void start(Stage stage) throws IOException {
 
-        int speed = 10;
 
         GameScene gameScene = new GameScene();
-
-        Player player = new Player(0, 380, 3,gameScene);
-
+        player = new Player(gameScene.getWidth()/2, gameScene.getHeight()- Player.PLAYER_SIZE, 3);
+        invaders = createInvaders();
         Canvas canvas = gameScene.getCanvas();
 
-        player.drawPlayer();
-
         Pane root = new Pane(canvas);
-
         Scene scene = new Scene(root);
-
-        scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.LEFT) {
-                if (player.getX() >= gameScene.getMargin()) {
-                    player.setX(player.getX() - speed);
-                }
-            } else if (event.getCode() == KeyCode.RIGHT) {
-                if (player.getX() <= gameScene.getWidth() - gameScene.getMargin()-20) {
-                    player.setX(player.getX() + speed);
-                }
-            }
-
-            gameScene.getGraphicContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
-            player.drawPlayer();
-        });
 
         stage.setScene(scene);
         stage.show();
 
 
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                scene.setOnKeyPressed(event -> {
+                    //
+                    activeKeys.add(event.getCode().toString());
+                    System.out.println("Push " + event.getCode().toString());
+                });
+
+                scene.setOnKeyReleased(keyEvent -> {
+                            activeKeys.remove(keyEvent.getCode().toString());
+                            System.out.println("release " + keyEvent.getCode().toString());
+                        }
+                );
+                gameScene.getGraphicContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+                if(!gameOver) {
+                    update();
+                    render(gameScene);
+                }else {
+                    showGameOverMessage(gameScene);
+                }
+
+
+            }
+        };
+
+        timer.start();
+
+
+    }
+
+    private void showGameOverMessage(GameScene gameScene) {
+        gameScene.getGraphicContext().setFill(Color.WHITE);
+        gameScene.getGraphicContext().fillRect(0,0, gameScene.getWidth(), gameScene.getHeight());
+        gameScene.getGraphicContext().strokeText("Koniec gry", gameScene.getHeight()/2, gameScene.getHeight()/2 );
+    }
+
+    private void render(GameScene gameScene) {
+        player.drawPlayer(gameScene);
+
+        for (Invader invader : invaders) {
+            invader.drawInvader(gameScene);
+        }
+    }
+
+    private void update() {
+        player.update();
+
+        for (Invader invader : invaders) {
+            invader.update();
+            if(player.intersects(invader)) {
+                gameOver = true;
+                break;
+            }
+        }
+
+    }
+
+    private List<Invader> createInvaders() {
+        List<Invader> invaders = new ArrayList<>();
+        for(int row = 0; row < 4; row++) {
+            for(int col = 0; col < 8; col++) {
+                int x = col * 100 + 50;
+                int y = row * 50 + 50;
+                invaders.add(new Invader(x,y, INVADER_SIZE, INVADER_SPEED));
+            }
+        }
+        return invaders;
     }
 
     public static void main(String[] args) {

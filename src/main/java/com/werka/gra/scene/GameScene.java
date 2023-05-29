@@ -4,39 +4,39 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
 public class GameScene {
-    private int width;
 
-    private int height;
+    public static int WIDTH;
 
-    private int margin;
+    public static int HEIGHT;
+
+    public static int MARGIN;
 
     private Canvas canvas;
 
 
-
     public GameScene() {
-        this.width = 1024;
-        this.height = 786;
-        this.margin = 10;
-        this.canvas=new Canvas(this.width,this.height);
+        this.WIDTH = 1024;
+        this.HEIGHT = 600;
+        this.MARGIN = 10;
+        this.canvas=new Canvas(this.WIDTH,this.HEIGHT);
     }
 
     public GameScene(int width, int height, int margin) {
-        this.width = height;
-        this.height = height;
-        this.margin = margin;
+        this.WIDTH = height;
+        this.HEIGHT = height;
+        this.MARGIN = margin;
     }
 
     public int getWidth() {
-        return width;
+        return WIDTH;
     }
 
     public int getHeight() {
-        return height;
+        return HEIGHT;
     }
 
     public int getMargin() {
-        return margin;
+        return MARGIN;
     }
 
     public Canvas getCanvas() {
