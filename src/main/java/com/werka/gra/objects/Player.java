@@ -82,4 +82,7 @@ public class Player {
                 y < invader.getY() + INVADER_SIZE;
     }
 
+    public void decreaseLives() {
+        this.lives--;
+    }
 }

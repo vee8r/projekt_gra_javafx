@@ -69,6 +69,11 @@ public class HelloApplication extends Application {
                     render(gameScene);
                 }else {
                     showGameOverMessage(gameScene);
+                    if( activeKeys.contains(KeyCode.ENTER.toString())) {
+                        gameOver = false;
+                        resetPositions();
+                    }
+
                 }
 
 
@@ -80,10 +85,16 @@ public class HelloApplication extends Application {
 
     }
 
+    private void resetPositions() {
+        invaders.clear();
+        invaders = createInvaders();
+    }
+
     private void showGameOverMessage(GameScene gameScene) {
         gameScene.getGraphicContext().setFill(Color.WHITE);
         gameScene.getGraphicContext().fillRect(0,0, gameScene.getWidth(), gameScene.getHeight());
         gameScene.getGraphicContext().strokeText("Koniec gry", gameScene.getHeight()/2, gameScene.getHeight()/2 );
+        gameScene.getGraphicContext().strokeText("Wciśnij enter aby grac dalej", gameScene.getHeight()/2+50, gameScene.getHeight()/2 );
     }
 
     private void render(GameScene gameScene) {
@@ -92,6 +103,10 @@ public class HelloApplication extends Application {
         for (Invader invader : invaders) {
             invader.drawInvader(gameScene);
         }
+
+        gameScene.getGraphicContext().strokeText("Pozostało żyć:"+player.getLives(), 20, 20 );
+
+
     }
 
     private void update() {
@@ -101,6 +116,7 @@ public class HelloApplication extends Application {
             invader.update();
             if(player.intersects(invader)) {
                 gameOver = true;
+                player.decreaseLives();
                 break;
             }
         }
