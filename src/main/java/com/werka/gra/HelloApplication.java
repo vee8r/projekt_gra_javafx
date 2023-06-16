@@ -1,5 +1,6 @@
 package com.werka.gra;
 
+import com.werka.gra.objects.Bullet;
 import com.werka.gra.objects.Invader;
 import com.werka.gra.objects.Player;
 import com.werka.gra.scene.GameScene;
@@ -19,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.werka.gra.objects.Invader.INVADER_SIZE;
+import static com.werka.gra.objects.Player.PLAYER_SIZE;
 
 public class HelloApplication extends Application {
 
@@ -26,19 +28,26 @@ public class HelloApplication extends Application {
     public static HashSet<String> activeKeys = new HashSet<>();
 
     private List<Invader> invaders;
+
+    private List<Bullet> bullets;
     private Player player;
 
     private boolean gameOver;
 
-    public static final int INVADER_SPEED = 30;
+    public static final int INVADER_SPEED = 10;
+
+    public static final int BULLET_SPEED=3;
+    private int score;
+
 
     @Override
     public void start(Stage stage) throws IOException {
 
 
         GameScene gameScene = new GameScene();
-        player = new Player(gameScene.getWidth()/2, gameScene.getHeight()- Player.PLAYER_SIZE, 3);
+        player = new Player(gameScene.getWidth()/2, gameScene.getHeight()- PLAYER_SIZE, 3);
         invaders = createInvaders();
+        bullets= new ArrayList<>();
         Canvas canvas = gameScene.getCanvas();
 
         Pane root = new Pane(canvas);
@@ -55,6 +64,9 @@ public class HelloApplication extends Application {
                     //
                     activeKeys.add(event.getCode().toString());
                     System.out.println("Push " + event.getCode().toString());
+                    if(event.getCode() == KeyCode.SPACE && !gameOver){
+                        bullets.add(new Bullet(player.getX() + PLAYER_SIZE/2, player.getY(), -BULLET_SPEED));
+                    }
                 });
 
                 scene.setOnKeyReleased(keyEvent -> {
@@ -104,6 +116,10 @@ public class HelloApplication extends Application {
             invader.drawInvader(gameScene);
         }
 
+        for (Bullet bullet : bullets) {
+            bullet.drawBullet(gameScene);
+        }
+
         gameScene.getGraphicContext().strokeText("Pozostało żyć:"+player.getLives(), 20, 20 );
 
 
@@ -119,6 +135,25 @@ public class HelloApplication extends Application {
                 player.decreaseLives();
                 break;
             }
+        }
+
+        for (Bullet bullet : bullets) {
+            bullet.update();
+            if(bullet.isOutOfBounds()) {
+                bullets.remove(bullet);
+                break;
+            }
+            for (Invader invader: invaders) {
+                if (bullet.intersects(invader)) {
+                    invaders.remove(invader);
+                    bullets.remove(bullet);
+                    score++;
+                    break;
+                }
+            }
+        }
+        if (invaders.isEmpty()) {
+            gameOver = true;
         }
 
     }
