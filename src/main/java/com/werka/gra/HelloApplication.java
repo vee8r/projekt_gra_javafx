@@ -36,8 +36,9 @@ public class HelloApplication extends Application {
 
     public static final int INVADER_SPEED = 10;
 
-    public static final int BULLET_SPEED=3;
+    public static final int BULLET_SPEED = 3;
     private int score;
+    private int level = 1;
 
 
     @Override
@@ -45,9 +46,9 @@ public class HelloApplication extends Application {
 
 
         GameScene gameScene = new GameScene();
-        player = new Player(gameScene.getWidth()/2, gameScene.getHeight()- PLAYER_SIZE, 3);
+        player = new Player(gameScene.getWidth() / 2, gameScene.getHeight() - PLAYER_SIZE, 3);
         invaders = createInvaders();
-        bullets= new ArrayList<>();
+        bullets = new ArrayList<>();
         Canvas canvas = gameScene.getCanvas();
 
         Pane root = new Pane(canvas);
@@ -64,8 +65,8 @@ public class HelloApplication extends Application {
                     //
                     activeKeys.add(event.getCode().toString());
                     System.out.println("Push " + event.getCode().toString());
-                    if(event.getCode() == KeyCode.SPACE && !gameOver){
-                        bullets.add(new Bullet(player.getX() + PLAYER_SIZE/2, player.getY(), -BULLET_SPEED));
+                    if (event.getCode() == KeyCode.SPACE && !gameOver) {
+                        bullets.add(new Bullet(player.getX() + PLAYER_SIZE / 2, player.getY(), -BULLET_SPEED));
                     }
                 });
 
@@ -76,14 +77,17 @@ public class HelloApplication extends Application {
                 );
                 gameScene.getGraphicContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-                if(!gameOver) {
+                if (!gameOver) {
                     update();
                     render(gameScene);
-                }else {
+                } else {
                     showGameOverMessage(gameScene);
-                    if( activeKeys.contains(KeyCode.ENTER.toString())) {
+                    if (activeKeys.contains(KeyCode.ENTER.toString())) {
                         gameOver = false;
                         resetPositions();
+                        if (player.getLives()<0) {
+                            player.setLives(3);
+                        }
                     }
 
                 }
@@ -104,9 +108,13 @@ public class HelloApplication extends Application {
 
     private void showGameOverMessage(GameScene gameScene) {
         gameScene.getGraphicContext().setFill(Color.WHITE);
-        gameScene.getGraphicContext().fillRect(0,0, gameScene.getWidth(), gameScene.getHeight());
-        gameScene.getGraphicContext().strokeText("Koniec gry", gameScene.getHeight()/2, gameScene.getHeight()/2 );
-        gameScene.getGraphicContext().strokeText("Wciśnij enter aby grac dalej", gameScene.getHeight()/2+50, gameScene.getHeight()/2 );
+        gameScene.getGraphicContext().fillRect(0, 0, gameScene.getWidth(), gameScene.getHeight());
+        if (gameOver && player.getLives()==0) {
+            gameScene.getGraphicContext().strokeText("Koniec gry", gameScene.getHeight() / 2, gameScene.getHeight() / 2);
+        }else {
+            gameScene.getGraphicContext().strokeText("Koniec poziomu", gameScene.getHeight() / 2, gameScene.getHeight() / 2);
+        }
+        gameScene.getGraphicContext().strokeText("Wciśnij enter aby grac dalej", gameScene.getHeight() / 2 + 150, gameScene.getHeight() / 2);
     }
 
     private void render(GameScene gameScene) {
@@ -120,7 +128,9 @@ public class HelloApplication extends Application {
             bullet.drawBullet(gameScene);
         }
 
-        gameScene.getGraphicContext().strokeText("Pozostało żyć:"+player.getLives(), 20, 20 );
+        gameScene.getGraphicContext().strokeText("Pozostało żyć:" + player.getLives(), 20, 20);
+        gameScene.getGraphicContext().strokeText("Punkty:" + score, 200, 20);
+        gameScene.getGraphicContext().strokeText("Poziom:" + level, 300, 20);
 
 
     }
@@ -130,7 +140,7 @@ public class HelloApplication extends Application {
 
         for (Invader invader : invaders) {
             invader.update();
-            if(player.intersects(invader)) {
+            if (player.intersects(invader)) {
                 gameOver = true;
                 player.decreaseLives();
                 break;
@@ -139,11 +149,11 @@ public class HelloApplication extends Application {
 
         for (Bullet bullet : bullets) {
             bullet.update();
-            if(bullet.isOutOfBounds()) {
+            if (bullet.isOutOfBounds()) {
                 bullets.remove(bullet);
                 break;
             }
-            for (Invader invader: invaders) {
+            for (Invader invader : invaders) {
                 if (bullet.intersects(invader)) {
                     invaders.remove(invader);
                     bullets.remove(bullet);
@@ -154,17 +164,19 @@ public class HelloApplication extends Application {
         }
         if (invaders.isEmpty()) {
             gameOver = true;
+            level++;
+            bullets.clear();
         }
 
     }
 
     private List<Invader> createInvaders() {
         List<Invader> invaders = new ArrayList<>();
-        for(int row = 0; row < 4; row++) {
-            for(int col = 0; col < 8; col++) {
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 8; col++) {
                 int x = col * 100 + 50;
                 int y = row * 50 + 50;
-                invaders.add(new Invader(x,y, INVADER_SIZE, INVADER_SPEED));
+                invaders.add(new Invader(x, y, INVADER_SIZE, INVADER_SPEED + level));
             }
         }
         return invaders;
