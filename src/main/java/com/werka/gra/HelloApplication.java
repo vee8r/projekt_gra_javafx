@@ -2,9 +2,9 @@ package com.werka.gra;
 
 import com.werka.gra.objects.Bullet;
 import com.werka.gra.objects.Invader;
+import com.werka.gra.objects.InvaderBoss;
 import com.werka.gra.objects.Player;
 import com.werka.gra.scene.GameScene;
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -27,7 +27,9 @@ public class HelloApplication extends Application {
 
     public static HashSet<String> activeKeys = new HashSet<>();
 
-    private List<Invader> invaders;
+    private List<Invader> invaders = new ArrayList<>();
+
+    private InvaderBoss boss;
 
     private List<Bullet> bullets;
     private Player player;
@@ -47,7 +49,9 @@ public class HelloApplication extends Application {
 
         GameScene gameScene = new GameScene();
         player = new Player(gameScene.getWidth() / 2, gameScene.getHeight() - PLAYER_SIZE, 3);
-        invaders = createInvaders();
+
+        createInvadersForLevel();
+
         bullets = new ArrayList<>();
         Canvas canvas = gameScene.getCanvas();
 
@@ -84,8 +88,8 @@ public class HelloApplication extends Application {
                     showGameOverMessage(gameScene);
                     if (activeKeys.contains(KeyCode.ENTER.toString())) {
                         gameOver = false;
-                        resetPositions();
-                        if (player.getLives()<0) {
+                        createInvadersForLevel();
+                        if (player.getLives() < 0) {
                             player.setLives(3);
                         }
                     }
@@ -101,17 +105,23 @@ public class HelloApplication extends Application {
 
     }
 
-    private void resetPositions() {
+    private void createInvadersForLevel() {
         invaders.clear();
-        invaders = createInvaders();
+
+        if (level % 3 == 0) {
+            boss = new InvaderBoss(100, 50, 100, INVADER_SPEED + level);
+            invaders.add(boss);
+        } else {
+            invaders = createInvaders();
+        }
     }
 
     private void showGameOverMessage(GameScene gameScene) {
         gameScene.getGraphicContext().setFill(Color.WHITE);
         gameScene.getGraphicContext().fillRect(0, 0, gameScene.getWidth(), gameScene.getHeight());
-        if (gameOver && player.getLives()==0) {
+        if (gameOver && player.getLives() == 0) {
             gameScene.getGraphicContext().strokeText("Koniec gry", gameScene.getHeight() / 2, gameScene.getHeight() / 2);
-        }else {
+        } else {
             gameScene.getGraphicContext().strokeText("Koniec poziomu", gameScene.getHeight() / 2, gameScene.getHeight() / 2);
         }
         gameScene.getGraphicContext().strokeText("Wciśnij enter aby grac dalej", gameScene.getHeight() / 2 + 150, gameScene.getHeight() / 2);
@@ -119,6 +129,9 @@ public class HelloApplication extends Application {
 
     private void render(GameScene gameScene) {
         player.drawPlayer(gameScene);
+//        if (boss != null) {
+//            boss.drawInvader(gameScene);
+//        }
 
         for (Invader invader : invaders) {
             invader.drawInvader(gameScene);
@@ -132,11 +145,18 @@ public class HelloApplication extends Application {
         gameScene.getGraphicContext().strokeText("Punkty:" + score, 200, 20);
         gameScene.getGraphicContext().strokeText("Poziom:" + level, 300, 20);
 
+        if (boss != null) {
+            gameScene.getGraphicContext().strokeText("Pozostało żyć BOSSa:" + boss.getLives(), 400, 20);
+        }
+
 
     }
 
     private void update() {
         player.update();
+//        if (boss != null) {
+//            boss.update();
+//        }
 
         for (Invader invader : invaders) {
             invader.update();
@@ -155,9 +175,19 @@ public class HelloApplication extends Application {
             }
             for (Invader invader : invaders) {
                 if (bullet.intersects(invader)) {
-                    invaders.remove(invader);
-                    bullets.remove(bullet);
-                    score++;
+                    if (invader instanceof InvaderBoss) {
+                        ((InvaderBoss) invader).decreaseLives();
+                        if (((InvaderBoss) invader).getLives() == 0) {
+                            invaders.remove(invader);
+                            bullets.remove(bullet);
+                            boss = null;
+                            score++;
+                        }
+                    } else {
+                        invaders.remove(invader);
+                        bullets.remove(bullet);
+                        score++;
+                    }
                     break;
                 }
             }

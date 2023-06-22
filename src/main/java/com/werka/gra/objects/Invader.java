@@ -28,6 +28,14 @@ public class Invader {
         return y;
     }
 
+    public int getSize() {
+        return size;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
     // obsluga zmiany pozycji
     public void update() {
         x += speed;
