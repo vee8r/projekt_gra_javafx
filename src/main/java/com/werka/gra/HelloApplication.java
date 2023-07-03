@@ -1,23 +1,30 @@
 package com.werka.gra;
 
-import com.werka.gra.objects.Bullet;
-import com.werka.gra.objects.Invader;
-import com.werka.gra.objects.InvaderBoss;
-import com.werka.gra.objects.Player;
+import com.werka.gra.objects.*;
 import com.werka.gra.scene.GameScene;
+import com.werka.gra.scores.ScoreEntity;
+import com.werka.gra.util.HibernateUtil;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import static com.werka.gra.objects.Invader.INVADER_SIZE;
 import static com.werka.gra.objects.Player.PLAYER_SIZE;
@@ -32,15 +39,19 @@ public class HelloApplication extends Application {
     private InvaderBoss boss;
 
     private List<Bullet> bullets;
+    private List<InvaderBullet> invaderBullets;
     private Player player;
 
-    private boolean gameOver;
+    private boolean gameOver = true;
+    private String playerName;
 
     public static final int INVADER_SPEED = 10;
 
     public static final int BULLET_SPEED = 3;
     private int score;
     private int level = 1;
+    private int bulletCounter = 0;
+    private int invadersKilled = 0;
 
 
     @Override
@@ -53,25 +64,43 @@ public class HelloApplication extends Application {
         createInvadersForLevel();
 
         bullets = new ArrayList<>();
+        invaderBullets = new ArrayList<>();
         Canvas canvas = gameScene.getCanvas();
 
         Pane root = new Pane(canvas);
         Scene scene = new Scene(root);
 
-        stage.setScene(scene);
-        stage.show();
-
+        if (playerName == null) {
+            TextField textField = new TextField();
+            Text text = new Text("Enter your name");
+            textField.setPromptText("Enter your name");
+            Button button = new Button("Start");
+            button.setOnAction(event -> {
+                 playerName = textField.getText();
+                gameOver = false;
+                stage.setScene(scene);
+            });
+            VBox vBox = new VBox(10);
+            vBox.getChildren().addAll(text, textField, button);
+            Scene startScene = new Scene(vBox, 300, 300);
+            stage.setScene(startScene);
+            stage.show();
+        } else {
+            stage.setScene(scene);
+            stage.show();
+        }
 
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
+
+
                 scene.setOnKeyPressed(event -> {
                     //
                     activeKeys.add(event.getCode().toString());
                     System.out.println("Push " + event.getCode().toString());
-                    if (event.getCode() == KeyCode.SPACE && !gameOver) {
-                        bullets.add(new Bullet(player.getX() + PLAYER_SIZE / 2, player.getY(), -BULLET_SPEED));
-                    }
+                    handleStandardShoot(event);
+                    handleSpecialShoots(event);
                 });
 
                 scene.setOnKeyReleased(keyEvent -> {
@@ -85,6 +114,9 @@ public class HelloApplication extends Application {
                     update();
                     render(gameScene);
                 } else {
+                    if(playerName != null && player.getLives()==0) {
+                        saveScore();
+                    }
                     showGameOverMessage(gameScene);
                     if (activeKeys.contains(KeyCode.ENTER.toString())) {
                         gameOver = false;
@@ -93,7 +125,6 @@ public class HelloApplication extends Application {
                             player.setLives(3);
                         }
                     }
-
                 }
 
 
@@ -103,6 +134,32 @@ public class HelloApplication extends Application {
         timer.start();
 
 
+    }
+
+    private void handleStandardShoot(KeyEvent event) {
+        if (event.getCode() == KeyCode.SPACE && !gameOver) {
+            bullets.add(new Bullet(player.getX() + PLAYER_SIZE / 2, player.getY(), -BULLET_SPEED));
+            bulletCounter++;
+            if (bulletCounter % (5 + level) == 0) {
+                int noOfInvaders = invaders.size();
+                Random random = new Random();
+                int invaderToShot = random.nextInt(0, noOfInvaders - 1);
+                Invader invader = invaders.get(invaderToShot);
+                invaderBullets.add(new InvaderBullet(invader.getX() + INVADER_SIZE / 2, invader.getY() + INVADER_SIZE, BULLET_SPEED));
+            }
+        }
+    }
+
+    private void handleSpecialShoots(KeyEvent event) {
+        if (event.getCode() == KeyCode.V && !gameOver) {
+            if (player.getShoots() > 0) {
+                bullets.add(new Bullet(player.getX() + PLAYER_SIZE / 2, player.getY(), -BULLET_SPEED));
+                bullets.add(new Bullet(player.getX() + PLAYER_SIZE, player.getY(), -BULLET_SPEED));
+                bullets.add(new Bullet(player.getX(), player.getY(), -BULLET_SPEED));
+                bulletCounter += 3;
+                player.decreaseSpecialBullets();
+            }
+        }
     }
 
     private void createInvadersForLevel() {
@@ -127,11 +184,26 @@ public class HelloApplication extends Application {
         gameScene.getGraphicContext().strokeText("Wciśnij enter aby grac dalej", gameScene.getHeight() / 2 + 150, gameScene.getHeight() / 2);
     }
 
+    private void saveScore() {
+        ScoreEntity scoreEntity = new ScoreEntity(playerName, score);
+
+       /* Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // start a transaction
+            transaction = session.beginTransaction();
+            session.save(scoreEntity);
+            // commit transaction
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }*/
+    }
+
     private void render(GameScene gameScene) {
         player.drawPlayer(gameScene);
-//        if (boss != null) {
-//            boss.drawInvader(gameScene);
-//        }
 
         for (Invader invader : invaders) {
             invader.drawInvader(gameScene);
@@ -141,12 +213,18 @@ public class HelloApplication extends Application {
             bullet.drawBullet(gameScene);
         }
 
+        for (InvaderBullet invaderBullet : invaderBullets) {
+            invaderBullet.drawBullet(gameScene);
+        }
+
+        gameScene.getGraphicContext().strokeText("Player " + playerName, 400, 20);
         gameScene.getGraphicContext().strokeText("Pozostało żyć:" + player.getLives(), 20, 20);
+        gameScene.getGraphicContext().strokeText("Specjalna broń:" + player.getShoots(), 20, 70);
         gameScene.getGraphicContext().strokeText("Punkty:" + score, 200, 20);
         gameScene.getGraphicContext().strokeText("Poziom:" + level, 300, 20);
 
         if (boss != null) {
-            gameScene.getGraphicContext().strokeText("Pozostało żyć BOSSa:" + boss.getLives(), 400, 20);
+            gameScene.getGraphicContext().strokeText("Pozostało żyć BOSSa:" + boss.getLives(), 500, 20);
         }
 
 
@@ -154,9 +232,6 @@ public class HelloApplication extends Application {
 
     private void update() {
         player.update();
-//        if (boss != null) {
-//            boss.update();
-//        }
 
         for (Invader invader : invaders) {
             invader.update();
@@ -183,15 +258,42 @@ public class HelloApplication extends Application {
                             boss = null;
                             score++;
                         }
+                        invadersKilled += 10;
                     } else {
+                        invadersKilled++;
                         invaders.remove(invader);
                         bullets.remove(bullet);
                         score++;
+                    }
+                    if (invadersKilled % 50 == 0) {
+                        player.increaseLives();
+                    }
+                    if (invadersKilled % 10 == 0) {
+                        player.increaseSpecialShoots();
                     }
                     break;
                 }
             }
         }
+
+        for (InvaderBullet invaderBullet : invaderBullets) {
+            invaderBullet.update();
+            if (invaderBullet.isOutOfBounds()) {
+                invaderBullets.remove(invaderBullet);
+                break;
+            }
+            if (invaderBullet.intersects(player)) {
+                invaderBullets.remove(invaderBullet);
+                player.decreaseLives();
+                break;
+            }
+
+        }
+
+        if(player.getLives() == 0){
+            gameOver = true;
+        }
+
         if (invaders.isEmpty()) {
             gameOver = true;
             level++;

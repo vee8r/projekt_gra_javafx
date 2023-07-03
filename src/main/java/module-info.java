@@ -1,6 +1,9 @@
 module com.example.projekt_gra {
     requires javafx.controls;
     requires javafx.fxml;
+    requires jakarta.persistence;
+    requires org.hibernate.orm.core;
+    requires java.naming;
 
 
     opens com.werka.gra to javafx.fxml;

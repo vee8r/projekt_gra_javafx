@@ -25,7 +25,7 @@ public class Bullet {
     }
 
     public void drawBullet(GameScene gameScene){
-        gameScene.getGraphicContext().setFill(Color.YELLOW);
+        gameScene.getGraphicContext().setFill(Color.BLACK);
         gameScene.getGraphicContext().fillOval(x, y, 5,10);
     }
 

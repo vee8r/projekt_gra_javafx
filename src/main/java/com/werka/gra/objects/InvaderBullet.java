@@ -20,11 +20,11 @@ public class InvaderBullet {
     }
 
     public void update() {
-        y -= speed;
+        y += speed;
     }
 
     public void drawBullet(GameScene gameScene){
-        gameScene.getGraphicContext().setFill(Color.PINK);
+        gameScene.getGraphicContext().setFill(Color.RED);
         gameScene.getGraphicContext().fillOval(x, y, 5,10);
     }
 
@@ -34,9 +34,9 @@ public class InvaderBullet {
 
     public boolean intersects(Player player) {
         return x > player.getX() &&
-                x < player.getX() + INVADER_SIZE &&
+                x < player.getX() + Player.PLAYER_SIZE &&
                 y > player.getY() &&
-                y < player.getY() + INVADER_SIZE;
+                y < player.getY() + Player.PLAYER_SIZE;
     }
 
 }

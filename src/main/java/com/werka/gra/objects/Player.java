@@ -12,10 +12,11 @@ import static com.werka.gra.scene.GameScene.WIDTH;
 
 public class Player {
 
-    public static final int PLAYER_SIZE = 20;
+    public static final int PLAYER_SIZE = 30;
     private int x;
     private int y;
     private int lives;
+    private int specialShoots =3;
 
 
     public Player() {
@@ -84,5 +85,21 @@ public class Player {
 
     public void decreaseLives() {
         this.lives--;
+    }
+
+    public void increaseLives() {
+        this.lives++;
+    }
+
+    public void increaseSpecialShoots() {
+        this.specialShoots++;
+    }
+
+    public void decreaseSpecialBullets() {
+        this.specialShoots--;
+    }
+
+    public int getShoots() {
+        return this.specialShoots;
     }
 }
