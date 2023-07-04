@@ -21,7 +21,7 @@ public class InvaderBullet {
 
     public void update() {
         y += speed;
-    }
+    } // przesuwanie pocisku w dol ekranu
 
     public void drawBullet(GameScene gameScene){
         gameScene.getGraphicContext().setFill(Color.RED);
@@ -32,8 +32,8 @@ public class InvaderBullet {
         return y < 0 || y > HEIGHT;
     }
 
-    public boolean intersects(Player player) {
-        return x > player.getX() &&
+    public boolean intersects(Player player) { // sprawdzanie kolizji pocisku przeciwnika z graczem
+        return x > player.getX() && // sprawdzanie czy pocisk jest wewnatrz prostokata gracza
                 x < player.getX() + Player.PLAYER_SIZE &&
                 y > player.getY() &&
                 y < player.getY() + Player.PLAYER_SIZE;

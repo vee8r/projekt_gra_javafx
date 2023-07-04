@@ -63,10 +63,10 @@ public class Player {
             x += 5;
         }
 
-        if (x < 0) {
-            x = 0;
+        if (x < 0) { // ograniczenie wychodzenia gracza poza ekran
+            x = 0; // ustawia 0 zeby nie uciekal poza zakres
         } else if (x > WIDTH - PLAYER_SIZE) {
-            x = WIDTH - PLAYER_SIZE;
+            x = WIDTH - PLAYER_SIZE; // ustawia szerokosc ekranu - szerokosc gracza zeby nie uciekal poza zakres
         }
     }
 
@@ -76,7 +76,7 @@ public class Player {
 
     }
 
-    public boolean intersects(Invader invader) {
+    public boolean intersects(Invader invader) { // sprawdzanie kolizji gracza z przeciwnikiem
         return x + PLAYER_SIZE > invader.getX() &&
                 x < invader.getX() + INVADER_SIZE &&
                 y + PLAYER_SIZE > invader.getY() &&

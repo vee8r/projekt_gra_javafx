@@ -73,7 +73,6 @@ public class HelloApplication extends Application {
         if (playerName == null) {
             TextField textField = new TextField();
             Text text = new Text("Enter your name");
-            textField.setPromptText("Enter your name");
             Button button = new Button("Start");
             button.setOnAction(event -> {
                  playerName = textField.getText();
@@ -121,8 +120,11 @@ public class HelloApplication extends Application {
                     if (activeKeys.contains(KeyCode.ENTER.toString())) {
                         gameOver = false;
                         createInvadersForLevel();
+                        bullets.clear();  // czyszczenie listy pocisków
+                        invaderBullets.clear(); // czyszczenie listy pocisków przeciwnikow
                         if (player.getLives() < 0) {
                             player.setLives(3);
+                            level = 1;
                         }
                     }
                 }
@@ -130,29 +132,26 @@ public class HelloApplication extends Application {
 
             }
         };
-
         timer.start();
-
-
     }
 
-    private void handleStandardShoot(KeyEvent event) {
+    private void handleStandardShoot(KeyEvent event) { // obsługa strzału gracza i przeciwników
         if (event.getCode() == KeyCode.SPACE && !gameOver) {
             bullets.add(new Bullet(player.getX() + PLAYER_SIZE / 2, player.getY(), -BULLET_SPEED));
-            bulletCounter++;
-            if (bulletCounter % (5 + level) == 0) {
+            bulletCounter++; // licznik pocisków
+            if (bulletCounter % 5 == 0) {
                 int noOfInvaders = invaders.size();
                 Random random = new Random();
-                int invaderToShot = random.nextInt(0, noOfInvaders - 1);
+                int invaderToShot = random.nextInt(0, noOfInvaders - 1); // generowanie losowego numeru przeciwnika
                 Invader invader = invaders.get(invaderToShot);
                 invaderBullets.add(new InvaderBullet(invader.getX() + INVADER_SIZE / 2, invader.getY() + INVADER_SIZE, BULLET_SPEED));
             }
         }
     }
 
-    private void handleSpecialShoots(KeyEvent event) {
+    private void handleSpecialShoots(KeyEvent event) { // obsługa specjalnych strzałów gracza
         if (event.getCode() == KeyCode.V && !gameOver) {
-            if (player.getShoots() > 0) {
+            if (player.getShoots() > 0) { // sprawdzenie czy gracz ma jeszcze strzały specjalne
                 bullets.add(new Bullet(player.getX() + PLAYER_SIZE / 2, player.getY(), -BULLET_SPEED));
                 bullets.add(new Bullet(player.getX() + PLAYER_SIZE, player.getY(), -BULLET_SPEED));
                 bullets.add(new Bullet(player.getX(), player.getY(), -BULLET_SPEED));

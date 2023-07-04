@@ -20,7 +20,7 @@ public class Bullet {
         this.speed = speed;
     }
 
-    public void update() {
+    public void update() { // przesuwanie pocisku w gore ekranu
         y += speed;
     }
 
@@ -31,9 +31,9 @@ public class Bullet {
 
     public boolean isOutOfBounds() {
         return y < 0 || y > HEIGHT;
-    }
+    } // sprawdzanie czy pocisk jest poza ekranem
 
-    public boolean intersects(Invader invader) {
+    public boolean intersects(Invader invader) { // sprawdzanie kolizji pocisku gracza z przeciwnikiem
         return x > invader.getX() &&
                 x < invader.getX() + INVADER_SIZE &&
                 y > invader.getY() &&

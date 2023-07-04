@@ -38,10 +38,10 @@ public class Invader {
 
     // obsluga zmiany pozycji
     public void update() {
-        x += speed;
-        if (x <= 0 || x >= WIDTH - size) {
-            speed = -speed;
-            y += size / 2;
+        x += speed; // przesuniecie na osi x o wartosc speed
+        if (x <= 0 || x >= WIDTH - size) { // jesli wyjdzie poza ekran to zmien kierunek i przesun w dol
+            speed = -speed; // zmiana kierunku
+            y += size / 2; // przesuniecie w dol po zmianie kierunku
         }
     }
 
