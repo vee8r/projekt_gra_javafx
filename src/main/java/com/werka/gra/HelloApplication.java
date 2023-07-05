@@ -67,8 +67,8 @@ public class HelloApplication extends Application {
         invaderBullets = new ArrayList<>();
         Canvas canvas = gameScene.getCanvas();
 
-        Pane root = new Pane(canvas);
-        Scene scene = new Scene(root);
+        Pane root = new Pane(canvas); // tworzenie kontenera na canvas
+        Scene scene = new Scene(root); // tworzenie sceny
 
         if (playerName == null) {
             TextField textField = new TextField();
@@ -107,7 +107,7 @@ public class HelloApplication extends Application {
                             System.out.println("release " + keyEvent.getCode().toString());
                         }
                 );
-                gameScene.getGraphicContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                gameScene.getGraphicContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight()); // czyszczenie canvasa
 
                 if (!gameOver) {
                     update();
@@ -162,7 +162,7 @@ public class HelloApplication extends Application {
     }
 
     private void createInvadersForLevel() {
-        invaders.clear();
+        invaders.clear(); // czyszczenie listy przeciwników poprzedniego poziomu
 
         if (level % 3 == 0) {
             boss = new InvaderBoss(100, 50, 100, INVADER_SPEED + level);
@@ -296,15 +296,15 @@ public class HelloApplication extends Application {
         if (invaders.isEmpty()) {
             gameOver = true;
             level++;
-            bullets.clear();
+            bullets.clear(); // usuwanie wszystkich pocisków z listy
         }
 
     }
 
     private List<Invader> createInvaders() {
         List<Invader> invaders = new ArrayList<>();
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < 4; row++) { // 4 rzędy z 8 obiektami w każdym
+            for (int col = 0; col < 8; col++) { // 8 kolumn
                 int x = col * 100 + 50;
                 int y = row * 50 + 50;
                 invaders.add(new Invader(x, y, INVADER_SIZE, INVADER_SPEED + level));

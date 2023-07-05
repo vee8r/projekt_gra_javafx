@@ -29,7 +29,7 @@ public class InvaderBoss extends Invader {
 
     @Override
     public void update() {
-        super.update(); // wywolanie metody z klasy macierzystej metode do aktualizacji pozycji
+        super.update(); // wywolanie metody z klasy macierzystej do aktualizacji pozycji
         if (dy >= 30 || dy <= 0) {
             yspeed = -yspeed; // zmiana kierunku lotu bosa
         }
